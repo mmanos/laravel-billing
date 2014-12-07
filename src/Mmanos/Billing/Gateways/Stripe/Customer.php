@@ -91,10 +91,11 @@ class Customer implements CustomerInterface
 		}
 		
 		return array(
-			'id'         => $this->id,
-			'email'      => $this->stripe_customer->email,
-			'created_at' => date('Y-m-d H:i:s', $this->stripe_customer->created),
-			'discounts'  => $discounts,
+			'id'          => $this->id,
+			'description' => $this->stripe_customer->description,
+			'email'       => $this->stripe_customer->email,
+			'created_at'  => date('Y-m-d H:i:s', $this->stripe_customer->created),
+			'discounts'   => $discounts,
 		);
 	}
 	
@@ -108,9 +109,10 @@ class Customer implements CustomerInterface
 	public function create(array $properties = array())
 	{
 		$stripe_customer = Stripe_Customer::create(array(
-			'email'  => Arr::get($properties, 'email') ? Arr::get($properties, 'email') : null,
-			'coupon' => Arr::get($properties, 'coupon') ? Arr::get($properties, 'coupon') : null,
-			'card'   => Arr::get($properties, 'card_token') ? Arr::get($properties, 'card_token') : null,
+			'description' => Arr::get($properties, 'description') ? Arr::get($properties, 'description') : null,
+			'email'       => Arr::get($properties, 'email') ? Arr::get($properties, 'email') : null,
+			'coupon'      => Arr::get($properties, 'coupon') ? Arr::get($properties, 'coupon') : null,
+			'card'        => Arr::get($properties, 'card_token') ? Arr::get($properties, 'card_token') : null,
 		));
 		
 		$this->id = $stripe_customer->id;
@@ -129,6 +131,9 @@ class Customer implements CustomerInterface
 	{
 		$this->info();
 		
+		if (!empty($properties['description'])) {
+			$this->stripe_customer->description = $properties['description'];
+		}
 		if (!empty($properties['email'])) {
 			$this->stripe_customer->email = $properties['email'];
 		}

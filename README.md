@@ -339,7 +339,7 @@ If your application offers a free-trial with no credit-card up front, set the `c
 protected $cardUpFront = false;
 ```
 
-On account creation, be sure to set the trial end date on the model:
+On model creation, be sure to set the trial end date on the model:
 
 ```php
 $website->billing_trial_ends_at = Carbon::now()->addDays(14);

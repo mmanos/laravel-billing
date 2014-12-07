@@ -80,10 +80,11 @@ class Customer implements CustomerInterface
 		}
 		
 		return array(
-			'id'         => $this->id,
-			'email'      => $this->braintree_customer->email,
-			'created_at' => date('Y-m-d H:i:s', $this->braintree_customer->createdAt->getTimestamp()),
-			'discounts'  => array(), // Customer-specific discounts not supported.
+			'id'          => $this->id,
+			'description' => null,
+			'email'       => $this->braintree_customer->email,
+			'created_at'  => date('Y-m-d H:i:s', $this->braintree_customer->createdAt->getTimestamp()),
+			'discounts'   => array(), // Customer-specific discounts not supported.
 		);
 	}
 	
