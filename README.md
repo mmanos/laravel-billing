@@ -6,6 +6,7 @@ This package provides an expressive, fluent interface to a billing services gate
 * Support for multiple subscriptions per customer
 * Support for multiple credit cards per customer
 * Support for individual charges
+* Support for free subscription plans
 
 It currently comes bundled with drivers for these billing services:
 
@@ -348,7 +349,7 @@ $website->billing_trial_ends_at = Carbon::now()->addDays(14);
 $website->save();
 ```
 
-It should be noted that any `subscription` commands executed executed on an on-trial subscription model will not be synced with the billing gateway if the customer is not ready for billing (created in billing system with at least one credit card). This allows the developer to execute the same `craete`, `swap`, etc commands on a model while you wait for the customer to be created in the billing gateway.
+It should be noted that any `subscription` commands executed on an on-trial subscription model will not be synced with the billing gateway if the customer is not ready for billing (created in billing system with at least one credit card). This allows the developer to perform the same `create`, `swap`, etc commands on a model while you wait for the customer to be created in the billing gateway.
 
 If you have one or more pending, on-trial, subscriptions when the user does add their credit card, you can use the `withSubscriptions` flag to activate all pending, non-free, subscriptions in the billing gateway:
 
