@@ -348,6 +348,14 @@ $website->billing_trial_ends_at = Carbon::now()->addDays(14);
 $website->save();
 ```
 
+It should be noted that any `subscription` commands executed executed on an on-trial subscription model will not be synced with the billing gateway if the customer is not ready for billing (created in billing system with at least one credit card). This allows the developer to execute the same `craete`, `swap`, etc commands on a model while you wait for the customer to be created in the billing gateway.
+
+If you have one or more pending, on-trial, subscriptions when the user does add their credit card, you can use the `withSubscriptions` flag to activate all pending, non-free, subscriptions in the billing gateway:
+
+```php
+$user->billing()->withCardToken('token')->withSubscriptions()->create();
+```
+
 #### Swapping Subscriptions
 
 To swap a user to a new subscription, use the `swap` method:
@@ -399,6 +407,26 @@ $website->subscription('monthly')->withCardToken('token')->resume();
 ```
 
 If the user cancels a subscription and then resumes that subscription before the subscription has fully expired, they may not be billed immediately, depending on the billing gateway being used.
+
+#### Free Subscription Plans
+
+Sometimes you want to offer a free subscription plan. You can do that easily with the `isFree` flag. Any subscription flagged as free will not be synced to the billing gateway. However, you may continue to use the same `subscription` commands, for ease of use, as long as you use the `isFree` flag.
+
+To create a free subscription:
+
+```php
+$user->subscriptions('free-plan')->isFree()->create($website);
+```
+
+You may also swap from a paid plan to a free plan. This will cancel the subscription in the billing gateway and update the local record to reflect the free state:
+
+```php
+$website->subscription('free-plan')->isFree()->swap();
+```
+
+> **Note:** If you do not use the `isFree` flag, then it is assumed the plan is not free and the subscription will be created in the billing gateway.
+
+> **Note:** This package will attempt to maintain the subscription id from the billing gateway and resume the existing subscription when swapped from paid to free and then back to paid again.
 
 #### Working With Subscriptions
 

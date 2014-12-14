@@ -41,6 +41,13 @@ class Billing
 	protected $card_token;
 	
 	/**
+	 * Whether or not to create all pending subscriptions after this operation.
+	 *
+	 * @var bool
+	 */
+	protected $with_subscriptions;
+	
+	/**
 	 * Create a new CustomerBillableTrait Billing instance.
 	 *
 	 * @param \Illuminate\Database\Eloquent\Model $model
@@ -73,6 +80,10 @@ class Billing
 		)));
 		
 		$this->refresh();
+		
+		if ($this->with_subscriptions) {
+			$this->createPendingSubscriptions();
+		}
 		
 		return $this;
 	}
@@ -119,6 +130,10 @@ class Billing
 					$subscription->subscription()->refresh();
 				}
 			}
+		}
+		
+		if ($this->with_subscriptions) {
+			$this->createPendingSubscriptions();
 		}
 		
 		return $this;
@@ -193,6 +208,38 @@ class Billing
 	}
 	
 	/**
+	 * Create all pending (usually trialing) customer subscriptions in the billing gateway.
+	 * To activate, the subscription must:
+	 * - Not already be active
+	 * - Not be free
+	 * - Not require a credit card up front
+	 * - Already have a plan selected
+	 *
+	 * @return Billing
+	 */
+	public function createPendingSubscriptions()
+	{
+		foreach ($this->model->subscriptionModelsArray() as $model) {
+			if ($model->billingIsActive()) {
+				continue;
+			}
+			if ($model->billing_free) {
+				continue;
+			}
+			if ($model->requiresCardUpFront()) {
+				continue;
+			}
+			if (!$model->billing_plan) {
+				continue;
+			}
+			
+			$model->subscription($model->billing_plan)->create();
+		}
+		
+		return $this;
+	}
+	
+	/**
 	 * The coupon to apply to a new customer.
 	 *
 	 * @param string $coupon
@@ -215,6 +262,19 @@ class Billing
 	public function withCardToken($card_token)
 	{
 		$this->card_token = $card_token;
+		return $this;
+	}
+	
+	/**
+	 * Create all subscriptions in the billing gateway after this action.
+	 * Useful if subscription trials have already been started but no
+	 * billing customer was created yet (cardUpFront = false).
+	 *
+	 * @return Billing
+	 */
+	public function withSubscriptions()
+	{
+		$this->with_subscriptions = true;
 		return $this;
 	}
 	

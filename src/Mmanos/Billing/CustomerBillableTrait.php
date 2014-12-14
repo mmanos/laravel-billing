@@ -377,11 +377,13 @@ trait CustomerBillableTrait
 		}
 		
 		static::saved(function ($model) {
+			$original = $model->getOriginal();
+			
 			if ($model->isDirty('billing_id')) {
-				if (empty($model->getOriginal('billing_id')) && !empty($model->billing_id)) {
+				if (empty($original['billing_id']) && !empty($model->billing_id)) {
 					$model->fireCustomerEvent('customerCreated');
 				}
-				else if (empty($model->billing_id) && !empty($model->getOriginal('billing_id'))) {
+				else if (empty($model->billing_id) && !empty($original['billing_id'])) {
 					$model->fireCustomerEvent('customerDeleted');
 				}
 			}

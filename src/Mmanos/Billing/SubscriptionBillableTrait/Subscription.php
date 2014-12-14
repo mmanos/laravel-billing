@@ -63,6 +63,13 @@ class Subscription
 	protected $skip_trial;
 	
 	/**
+	 * Whether or not this subscription should be free (not stored in billing gateway).
+	 *
+	 * @var bool
+	 */
+	protected $is_free;
+	
+	/**
 	 * Create a new SubscriptionBillableTrait Subscription instance.
 	 *
 	 * @param \Illuminate\Database\Eloquent\Model            $model
@@ -74,6 +81,10 @@ class Subscription
 	 */
 	public function __construct(\Illuminate\Database\Eloquent\Model $model, \Mmanos\Billing\Gateways\SubscriptionInterface $subscription = null, $plan = null, array $info = null)
 	{
+		if (null === $plan) {
+			$plan = $model->billing_plan;
+		}
+		
 		$this->model = $model;
 		$this->plan = $plan;
 		$this->subscription = $subscription;
@@ -98,6 +109,12 @@ class Subscription
 	 */
 	public function create(array $properties = array())
 	{
+		if ($this->is_free || $this->canLocalTrial()) {
+			return $this->storeLocal(array(
+				'quantity' => Arr::get($properties, 'quantity', 1),
+			));
+		}
+		
 		if ($this->model->billingIsActive()) {
 			return $this;
 		}
@@ -124,6 +141,7 @@ class Subscription
 			->create($this->plan, array_merge($properties, array(
 				'trial_ends_at' => $this->skip_trial ? date('Y-m-d H:i:s') : $this->model->billing_trial_ends_at,
 				'coupon'        => $this->coupon,
+				'quantity'      => Arr::get($properties, 'quantity', 1),
 				'card_token'    => $this->card_token,
 				'card'          => $this->card,
 			)));
@@ -143,7 +161,9 @@ class Subscription
 	public function cancel($at_period_end = true)
 	{
 		if (!$this->model->billingIsActive()) {
-			return $this;
+			return $this->storeLocal(array(
+				'subscription_ends_at' => date('Y-m-d H:i:s'),
+			));
 		}
 		
 		$this->subscription->cancel($at_period_end);
@@ -156,10 +176,22 @@ class Subscription
 	/**
 	 * Resume a canceled subscription in the billing gateway.
 	 *
+	 * @param int $quantity
+	 * 
 	 * @return Subscription
 	 */
-	public function resume()
+	public function resume($quantity = null)
 	{
+		if (null === $quantity) {
+			$quantity = $this->model->billing_quantity;
+		}
+		
+		if ($this->is_free || $this->canLocalTrial()) {
+			return $this->storeLocal(array(
+				'quantity' => $quantity,
+			));
+		}
+		
 		if (!$this->model->canceled()) {
 			return $this;
 		}
@@ -173,8 +205,9 @@ class Subscription
 		if ($this->subscription->info()) {
 			$this->subscription->update(array(
 				'plan'          => $this->plan,
-				'trial_ends_at' => date('Y-m-d H:i:s'),
+				'trial_ends_at' => $this->skip_trial ? date('Y-m-d H:i:s') : $this->model->billing_trial_ends_at,
 				'prorate'       => false,
+				'quantity'      => $quantity,
 				'card_token'    => $this->card_token,
 				'card'          => $this->card,
 			));
@@ -182,7 +215,8 @@ class Subscription
 		else {
 			$this->subscription = Billing::subscription(null, $customer ? $customer->gatewayCustomer() : null)
 				->create($this->plan, array(
-					'trial_ends_at' => date('Y-m-d H:i:s'),
+					'trial_ends_at' => $this->skip_trial ? date('Y-m-d H:i:s') : $this->model->billing_trial_ends_at,
+					'quantity'      => $quantity,
 					'card_token'    => $this->card_token,
 					'card'          => $this->card,
 				));
@@ -202,12 +236,28 @@ class Subscription
 	 */
 	public function swap($quantity = null)
 	{
-		if (!$this->model->billingIsActive()) {
-			return $this;
+		if (null === $quantity) {
+			$quantity = $this->model->billing_quantity;
 		}
 		
-		if (null === $quantity) {
-			$quantity = $this->quantity;
+		if ($this->is_free || $this->canLocalTrial()) {
+			return $this->storeLocal(array(
+				'quantity' => $quantity,
+			));
+		}
+		
+		if (!$this->model->billingIsActive()) {
+			if ($this->model->canceled()) {
+				return $this->resume($quantity);
+			}
+			else {
+				return $this->create(array('quantity' => $quantity));
+			}
+		}
+		
+		if (($customer = $this->model->customer()) && $this->card_token) {
+			$this->card = $customer->creditcards()->create($this->card_token)->id;
+			$this->card_token = null;
 		}
 		
 		// If no specific trial end date has been set, the default behavior should be
@@ -221,6 +271,8 @@ class Subscription
 			'plan'          => $this->plan,
 			'quantity'      => $quantity,
 			'trial_ends_at' => $this->skip_trial ? date('Y-m-d H:i:s') : $this->model->billing_trial_ends_at,
+			'card_token'    => $this->card_token,
+			'card'          => $this->card,
 		));
 		
 		$this->refresh();
@@ -237,13 +289,21 @@ class Subscription
 	 */
 	public function increment($count = 1)
 	{
+		$quantity = $this->model->billing_quantity + $count;
+		
+		if ($this->is_free || $this->canLocalTrial()) {
+			return $this->storeLocal(array(
+				'quantity' => $quantity,
+			));
+		}
+		
 		if (!$this->model->billingIsActive()) {
 			return $this;
 		}
 		
 		$this->subscription->update(array(
 			'plan'          => $this->model->billing_plan,
-			'quantity'      => $this->quantity + $count,
+			'quantity'      => $quantity,
 			'trial_ends_at' => $this->skip_trial ? date('Y-m-d H:i:s') : $this->model->billing_trial_ends_at,
 		));
 		
@@ -261,13 +321,21 @@ class Subscription
 	 */
 	public function decrement($count = 1)
 	{
+		$quantity = $this->model->billing_quantity - $count;
+		
+		if ($this->is_free || $this->canLocalTrial()) {
+			return $this->storeLocal(array(
+				'quantity' => $quantity,
+			));
+		}
+		
 		if (!$this->model->billingIsActive()) {
 			return $this;
 		}
 		
 		$this->subscription->update(array(
 			'plan'          => $this->model->billing_plan,
-			'quantity'      => $this->quantity - $count,
+			'quantity'      => $quantity,
 			'trial_ends_at' => $this->skip_trial ? date('Y-m-d H:i:s') : $this->model->billing_trial_ends_at,
 		));
 		
@@ -293,6 +361,7 @@ class Subscription
 		if ($info) {
 			$this->model->billing_active = 1;
 			$this->model->billing_subscription = $this->subscription->id();
+			$this->model->billing_free = 0;
 			$this->model->billing_plan = Arr::get($info, 'plan');
 			$this->model->billing_amount = Arr::get($info, 'amount', 0);
 			$this->model->billing_interval = Arr::get($info, 'interval');
@@ -311,6 +380,7 @@ class Subscription
 		else {
 			$this->model->billing_active = 0;
 			$this->model->billing_subscription = null;
+			$this->model->billing_free = 0;
 			$this->model->billing_plan = null;
 			$this->model->billing_amount = 0;
 			$this->model->billing_interval = null;
@@ -326,6 +396,74 @@ class Subscription
 		$this->info = $info;
 		
 		return $this;
+	}
+	
+	/**
+	 * Store the subscription data locally (not in billing gateway).
+	 *
+	 * @param array $properties
+	 * 
+	 * @return Subscription
+	 */
+	public function storeLocal(array $properties = array())
+	{
+		// Cancel in billing gateway, if active.
+		if ($this->model->billingIsActive()) {
+			$trial_ends_at = $this->model->billing_trial_ends_at;
+			$this->subscription->cancel(true);
+			$this->refresh();
+			$this->model->billing_trial_ends_at = $trial_ends_at;
+			$this->model->billing_subscription_ends_at = null;
+		}
+		
+		$this->model->billing_active = 0;
+		$this->model->billing_amount = 0;
+		$this->model->billing_interval = null;
+		$this->model->billing_card = null;
+		$this->model->billing_subscription_discounts = null;
+		
+		$this->model->billing_free = (int) $this->is_free;
+		
+		if ($this->plan) {
+			$this->model->billing_plan = $this->plan;
+		}
+		
+		if (!empty($properties['quantity'])) {
+			$this->model->billing_quantity = $properties['quantity'];
+		}
+		
+		$this->model->billing_trial_ends_at = $this->skip_trial ? date('Y-m-d H:i:s') : $this->model->billing_trial_ends_at;
+		
+		if (!empty($properties['subscription_ends_at'])) {
+			$this->model->billing_subscription_ends_at = $properties['subscription_ends_at'];
+			$this->model->billing_trial_ends_at = null;
+		}
+		
+		$this->model->save();
+		
+		return $this;
+	}
+	
+	/**
+	 * Whether or not a local trial is allowed for this subscription.
+	 *
+	 * @return bool
+	 */
+	public function canLocalTrial()
+	{
+		if (!$this->model->requiresCardUpFront()
+			&& $this->model->onTrial()
+			&& !$this->card_token
+			&& !(
+				($customer = $this->model->customer())
+				&& $customer->readyForBilling()
+				&& !empty($customer->billing_cards)
+			)
+		) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -375,6 +513,17 @@ class Subscription
 	public function skipTrial()
 	{
 		$this->skip_trial = true;
+		return $this;
+	}
+	
+	/**
+	 * Indicate that this subscription should be free and not stored in the billing gateway.
+	 *
+	 * @return Subscription
+	 */
+	public function isFree()
+	{
+		$this->is_free = true;
 		return $this;
 	}
 	

@@ -70,6 +70,14 @@ trait SubscriptionBillableTrait
 	 */
 	public function subscribed()
 	{
+		if ($this->billing_free) {
+			if (!$this->billing_subscription_ends_at
+				|| time() < strtotime($this->billing_subscription_ends_at)
+			) {
+				return true;
+			}
+		}
+		
 		if (!isset($this->cardUpFront) || $this->cardUpFront) {
 			return $this->billingIsActive() || $this->onGracePeriod();
 		}
@@ -115,6 +123,20 @@ trait SubscriptionBillableTrait
 	public function billingIsActive()
 	{
 		return $this->billing_active;
+	}
+	
+	/**
+	 * Whether or not this model requires a credit card up front.
+	 *
+	 * @return bool
+	 */
+	public function requiresCardUpFront()
+	{
+		if (!isset($this->cardUpFront) || $this->cardUpFront) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -388,22 +410,24 @@ trait SubscriptionBillableTrait
 		}
 		
 		static::saved(function ($model) {
+			$original = $model->getOriginal();
+			
 			if ($model->isDirty('billing_active')) {
-				if (empty($model->getOriginal('billing_active')) && !empty($model->billing_active)) {
+				if (empty($original['billing_active']) && !empty($model->billing_active)) {
 					$model->fireSubscriptionEvent('billingActivated');
 					
 					if ($model->isDirty('billing_subscription_ends_at')) {
-						if (empty($model->billing_subscription_ends_at) && !empty($model->getOriginal('billing_subscription_ends_at'))) {
+						if (empty($model->billing_subscription_ends_at) && !empty($original['billing_subscription_ends_at'])) {
 							$model->fireSubscriptionEvent('billingResumed');
 						}
 					}
 				}
-				else if (empty($model->billing_active) && !empty($model->getOriginal('billing_active'))) {
+				else if (empty($model->billing_active) && !empty($original['billing_active'])) {
 					$model->fireSubscriptionEvent('billingCanceled');
 				}
 			}
 			if ($model->isDirty('billing_plan')) {
-				if (!empty($model->getOriginal('billing_plan')) && !empty($model->billing_plan)) {
+				if (!empty($original['billing_plan']) && !empty($model->billing_plan)) {
 					$model->fireSubscriptionEvent('planSwapped');
 				}
 				if (!empty($model->billing_plan)) {
@@ -421,7 +445,7 @@ trait SubscriptionBillableTrait
 				}
 			}
 			if ($model->isDirty('billing_trial_ends_at')) {
-				if (!empty($model->billing_trial_ends_at) && !empty($model->getOriginal('billing_trial_ends_at'))) {
+				if (!empty($model->billing_trial_ends_at) && !empty($original['billing_trial_ends_at'])) {
 					if (strtotime($model->billing_trial_ends_at) > strtotime($model->getOriginal('billing_trial_ends_at'))) {
 						$model->fireSubscriptionEvent('trialExtended');
 					}

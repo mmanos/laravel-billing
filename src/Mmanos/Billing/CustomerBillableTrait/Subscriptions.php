@@ -62,6 +62,13 @@ class Subscriptions
 	protected $skip_trial;
 	
 	/**
+	 * Whether or not this subscription should be free (not stored in billing gateway).
+	 *
+	 * @var bool
+	 */
+	protected $is_free;
+	
+	/**
 	 * Create a new CustomerBillableTrait Subscriptions instance.
 	 *
 	 * @param \Illuminate\Database\Eloquent\Model $model
@@ -147,25 +154,11 @@ class Subscriptions
 	 */
 	public function create(\Illuminate\Database\Eloquent\Model $model, array $properties = array())
 	{
-		if (!$this->model->readyForBilling()) {
-			if ($this->card_token) {
-				$this->model->billing()->withCardToken($this->card_token)->create($properties);
-				if (!empty($this->model->billing_cards)) {
-					$this->card_token = null;
-				}
-			}
-			else {
-				$this->model->billing()->create($properties);
-			}
-		}
-		
-		if ($this->card_token) {
-			$this->card = $this->model->creditcards()->create($this->card_token)->id;
-			$this->card_token = null;
-		}
-		
 		$subscription = $model->subscription($this->plan);
 		
+		if ($this->card_token) {
+			$subscription->withCardToken($this->card_token);
+		}
 		if ($this->card) {
 			$subscription->withCard($this->card);
 		}
@@ -174,6 +167,9 @@ class Subscriptions
 		}
 		if ($this->skip_trial) {
 			$subscription->skipTrial();
+		}
+		if ($this->is_free) {
+			$subscription->isFree();
 		}
 		
 		return $subscription->create($properties);
@@ -184,7 +180,7 @@ class Subscriptions
 	 *
 	 * @param string $coupon
 	 * 
-	 * @return Subscription
+	 * @return Subscriptions
 	 */
 	public function withCoupon($coupon)
 	{
@@ -197,7 +193,7 @@ class Subscriptions
 	 *
 	 * @param string $card_token
 	 * 
-	 * @return Subscription
+	 * @return Subscriptions
 	 */
 	public function withCardToken($card_token)
 	{
@@ -210,7 +206,7 @@ class Subscriptions
 	 *
 	 * @param string|array $card
 	 * 
-	 * @return Subscription
+	 * @return Subscriptions
 	 */
 	public function withCard($card)
 	{
@@ -221,11 +217,22 @@ class Subscriptions
 	/**
 	 * Indicate that no trial should be enforced on the operation.
 	 *
-	 * @return Subscription
+	 * @return Subscriptions
 	 */
 	public function skipTrial()
 	{
 		$this->skip_trial = true;
+		return $this;
+	}
+	
+	/**
+	 * Indicate that this subscription should be free and not stored in the billing gateway.
+	 *
+	 * @return Subscriptions
+	 */
+	public function isFree()
+	{
+		$this->is_free = true;
 		return $this;
 	}
 }

@@ -50,7 +50,7 @@
 						Subscription
 						
 						@if ($item->subscription())
-							to {{ ucwords($item->subscription()->plan) }}
+							to {{ ucwords(str_replace(array('_', '-'), ' ', $item->subscription()->plan)) }}
 						@endif
 						
 						@if ($item->quantity > 1)

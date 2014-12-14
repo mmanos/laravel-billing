@@ -16,6 +16,7 @@ class AddSubscriptionBillingColumnsTo extends Migration
 		{
 			$table->tinyInteger('billing_active')->default(0);
 			$table->string('billing_subscription')->nullable();
+			$table->tinyInteger('billing_free')->default(0);
 			$table->string('billing_plan', 25)->nullable();
 			$table->integer('billing_amount')->default(0);
 			$table->string('billing_interval')->nullable();
@@ -43,7 +44,7 @@ class AddSubscriptionBillingColumnsTo extends Migration
 			$table->dropIndex('billing_card_index');
 			
 			$table->dropColumn(
-				'billing_active', 'billing_subscription', 'billing_plan', 'billing_amount',
+				'billing_active', 'billing_subscription', 'billing_free', 'billing_plan', 'billing_amount',
 				'billing_interval', 'billing_quantity', 'billing_card', 'billing_trial_ends_at',
 				'billing_subscription_ends_at', 'billing_subscription_discounts'
 			);
