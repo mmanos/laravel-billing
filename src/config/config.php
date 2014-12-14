@@ -11,11 +11,11 @@ return array(
 	| API, giving you convenient access to each gateway using the same
 	| syntax for each one. Here you may set the default billing gateway driver.
 	|
-	| Supported: "stripe", "braintree"
+	| Supported: "stripe", "braintree", "local"
 	|
 	*/
 
-	'default' => 'stripe',
+	'default' => 'local',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -61,6 +61,15 @@ return array(
 			'merchant'    => '',
 			'public'      => '',
 			'private'     => '',
+		),
+
+		'local' => array(
+			'database' => array(
+				'driver'   => 'sqlite',
+				'database' => storage_path().'/meta/billing-local.sqlite',
+				'prefix'   => '',
+			),
+			'api_delay_ms' => 200,
 		),
 
 	),

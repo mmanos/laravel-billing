@@ -35,6 +35,8 @@ class BillingServiceProvider extends ServiceProvider
 					return new \Mmanos\Billing\Gateways\Stripe\Gateway;
 				case 'braintree':
 					return new \Mmanos\Billing\Gateways\Braintree\Gateway;
+				case 'local':
+					return new \Mmanos\Billing\Gateways\Local\Gateway;
 				default:
 					return null;
 			}
@@ -49,6 +51,16 @@ class BillingServiceProvider extends ServiceProvider
 			return new SubscriptionTableCommand;
 		});
 		$this->commands('command.laravel-billing.subscription-table');
+		
+		$this->app->bindShared('command.laravel-billing.local-create-plan', function ($app) {
+			return new LocalCreatePlanCommand;
+		});
+		$this->commands('command.laravel-billing.local-create-plan');
+		
+		$this->app->bindShared('command.laravel-billing.local-create-coupon', function ($app) {
+			return new LocalCreateCouponCommand;
+		});
+		$this->commands('command.laravel-billing.local-create-coupon');
 	}
 	
 	/**

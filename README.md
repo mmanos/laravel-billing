@@ -11,6 +11,7 @@ It currently comes bundled with drivers for these billing services:
 
 * [Stripe](https://stripe.com)
 * [Braintree](https://www.braintreepayments.com)
+* Local (Non-production)
 
 > **Note:** Not all features are supported by every billing gateway. See the `Gateway Limitations` section below for more information.
 
@@ -618,3 +619,41 @@ Each billing gateway provides a different API and set of functionality. That bei
 * Does not return starting/ending customer balance on invoices.
 * Does not support resuming a canceled subscription. However, a new subscription will be created instead.
 * Does not support modifying the trial end date for an existing subscription. However, the existing subscription will be canceled and a new one created.
+
+## Local Driver
+
+This package comes bundled with a Local gateway driver to simulate talking with a real billing gateway. All data is stored in a SQLite database located in `app/storage/meta/billing-local.sqlite`.
+
+#### Adding Plans
+
+To add a subscription plan to the local driver database, use the `laravel-billing:local:create-plan` Artisan command:
+
+```console
+$ php artisan laravel-billing:local:create-plan
+```
+
+It will prompt you for the plan name, amount, interval, and trial period.
+
+#### Adding Coupons
+
+To add a coupon to the local driver database, use the `laravel-billing:local:create-coupon` Artisan command:
+
+```console
+$ php artisan laravel-billing:local:create-coupon
+```
+
+It will prompt you for the coupon code, percent_off, amount_off, and duration.
+
+#### Generating Credit Card Tokens
+
+Even though this is not a real billing gateway, it is designed to simulate how a real gateway would respond. Therefore, you still need to generate a credit card token to attach to a customer or subscription.
+
+To generate a valid token for this driver, simply JSON encode an object of fields you want to store with the credit card. For example:
+
+```javascript
+var token = JSON.stringify({
+	last4     : $('#card-number').val().substr(-4),
+	exp_month : $('#exp-month').val(),
+	exp_year  : $('#exp-year').val()
+});
+```
