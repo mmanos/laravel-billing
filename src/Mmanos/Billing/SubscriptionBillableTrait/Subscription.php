@@ -93,8 +93,10 @@ class Subscription
 			$this->subscription = $this->model->gatewaySubscription();
 		}
 		
-		if (empty($info)) {
-			$info = $this->subscription ? $this->subscription->info() : array();
+		if (empty($info) && $this->subscription) {
+			try {
+				$info = $this->subscription->info();
+			} catch (Exception $e) {}
 		}
 		
 		$this->info = $info;
@@ -351,6 +353,10 @@ class Subscription
 	 */
 	public function refresh()
 	{
+		if ($this->model->billing_free) {
+			return $this;
+		}
+		
 		$info = array();
 		if ($this->subscription) {
 			try {
