@@ -95,7 +95,9 @@ class WebhookController extends \Mmanos\Billing\Gateways\WebhookController
 	protected function handleCustomerSubscriptionDeleted(array $payload)
 	{
 		if ($subscription = $this->getSubscription($payload['data']['object']['id'])) {
-			$subscription->subscription()->refresh();
+			if ($subscription->billingIsActive()) {
+				$subscription->subscription()->refresh();
+			}
 		}
 		
 		return new Response('Webhook Handled', 200);

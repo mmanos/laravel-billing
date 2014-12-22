@@ -353,10 +353,6 @@ class Subscription
 	 */
 	public function refresh()
 	{
-		if ($this->model->billing_free) {
-			return $this;
-		}
-		
 		$info = array();
 		if ($this->subscription) {
 			try {
