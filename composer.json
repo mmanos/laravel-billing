@@ -4,8 +4,8 @@
     "keywords": ["laravel", "billing", "stripe", "braintree", "cashier", "payments", "subscriptions", "charges"],
     "authors": [
         {
-            "name": "Evgeny P",
-            "email": "me@evgen.in"
+            "name": "Mark Manos",
+            "email": "mark@airpac.com"
         }
     ],
     "require": {
