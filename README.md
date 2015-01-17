@@ -155,6 +155,31 @@ And add the subscription class(es) to the `subscription_models` property in this
 
 These values are primarily used by the WebhookControllers to help locate the corresponding Eloquent model from the gateway's ID when a new billing event is received.
 
+## Create a user with subscription
+
+```php
+public function subscribeNewUser($email, $paymentMethod){
+    $user = User::firstOrNew(array('email'=>$email));
+
+    //register user in Braintree with a credit card's payment token
+    if(!$c = $user->billing()){
+        $user->billing()->withCardToken($paymentMethod)->create();
+    }
+
+    // create customer
+    if(!$t = $user->subscriptions()->first()){
+        try{
+            $b = $user->subscriptions('basic')->withCardToken($paymentMethod)->create($user);
+        }catch(Exception $e){
+            return false;
+        }
+    }else{
+        throw new UserException('Subscription exists for that user');
+    }
+    return true;
+}
+```
+
 ## Customers
 
 Billing customers can be created and managed separately from subscriptions or charges.

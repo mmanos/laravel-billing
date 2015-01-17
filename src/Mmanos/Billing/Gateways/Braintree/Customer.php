@@ -99,6 +99,13 @@ class Customer implements CustomerInterface
 	{
 		$this->braintree_customer = Braintree_Customer::create(array(
 			'email'  => Arr::get($properties, 'email'),
+            'creditCard' => array(
+                'paymentMethodNonce' => Arr::get($properties, 'card_token') ? Arr::get($properties, 'card_token') : null,
+                'options' => array(
+                    'verifyCard' => true
+                )
+            )
+
 		))->customer;
 		
 		$this->id = $this->braintree_customer->id;
