@@ -1,5 +1,5 @@
 {
-    "name": "qwertydzen/laravel-billing",
+    "name": "mmanos/laravel-billing",
     "description": "A billing package for Laravel 4.",
     "keywords": ["laravel", "billing", "stripe", "braintree", "cashier", "payments", "subscriptions", "charges"],
     "authors": [
