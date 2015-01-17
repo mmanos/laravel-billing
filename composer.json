@@ -1,11 +1,11 @@
 {
-    "name": "mmanos/laravel-billing",
+    "name": "qwertydzen/laravel-billing",
     "description": "A billing package for Laravel 4.",
     "keywords": ["laravel", "billing", "stripe", "braintree", "cashier", "payments", "subscriptions", "charges"],
     "authors": [
         {
-            "name": "Mark Manos",
-            "email": "mark@airpac.com"
+            "name": "Evgeny P",
+            "email": "me@evgen.in"
         }
     ],
     "require": {
