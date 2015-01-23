@@ -3,6 +3,7 @@
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Carbon\Carbon;
 
 class WebhookController extends \Mmanos\Billing\Gateways\WebhookController
 {
@@ -54,12 +55,17 @@ class WebhookController extends \Mmanos\Billing\Gateways\WebhookController
 	protected function handleInvoicePaymentFailed(array $payload)
 	{
 		if ($customer = $this->getCustomer($payload['data']['object']['customer'])) {
+			$next_payment_attempt = Arr::get($payload, 'data.object.next_payment_attempt');
+			
+			$data = array(
+				'attempt_count' => Arr::get($payload, 'data.object.attempt_count'),
+				'next_payment_attempt' => Carbon::createFromTimeStamp($next_payment_attempt),
+			);
+			
 			$customer->fireCustomerEvent(
 				'invoicePaymentFailed',
 				$customer->invoices()->find($payload['data']['object']['id']),
-				array(
-					'attempt_count' => Arr::get($payload, 'data.object.attempt_count'),
-				)
+				$data
 			);
 		}
 		
