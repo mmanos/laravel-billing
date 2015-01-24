@@ -13,6 +13,10 @@
         "illuminate/support": "~4.1",
         "nesbot/carbon": "~1.0"
     },
+    "require-dev": {
+        "stripe/stripe-php": "~1.9",
+        "braintree/braintree_php" : "2.33.0"
+    },
     "suggest": {
         "stripe/stripe-php": "Add the Stripe gateway SDK.",
         "braintree/braintree_php": "Add the Braintree gateway SDK."
