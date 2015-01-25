@@ -55,11 +55,11 @@ class WebhookController extends \Mmanos\Billing\Gateways\WebhookController
 	protected function handleInvoicePaymentFailed(array $payload)
 	{
 		if ($customer = $this->getCustomer($payload['data']['object']['customer'])) {
-			$next_payment_attempt = Arr::get($payload, 'data.object.next_payment_attempt');
+			$next_attempt = Arr::get($payload, 'data.object.next_payment_attempt');
 			
 			$data = array(
 				'attempt_count' => Arr::get($payload, 'data.object.attempt_count'),
-				'next_payment_attempt' => Carbon::createFromTimeStamp($next_payment_attempt),
+				'next_attempt' => Carbon::createFromTimeStamp($next_attempt),
 			);
 			
 			$customer->fireCustomerEvent(
