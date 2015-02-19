@@ -1,6 +1,5 @@
 <?php namespace Mmanos\Billing\CustomerBillableTrait;
 
-use Mmanos\Billing\Facades\Billing;
 use Illuminate\Support\Arr;
 
 class Charges
@@ -121,7 +120,7 @@ class Charges
 			$this->card_token = null;
 		}
 		
-		$gateway_charge = Billing::charge(null, $this->model->gatewayCustomer())->create($amount, array_merge($properties, array(
+		$gateway_charge = \Mmanos\Billing\Facades\Billing::charge(null, $this->model->gatewayCustomer())->create($amount, array_merge($properties, array(
 			'card_token' => $this->card_token,
 			'card'       => $this->card,
 		)));
