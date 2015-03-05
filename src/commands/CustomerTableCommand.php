@@ -34,7 +34,7 @@ class CustomerTableCommand extends Command
 		
 		$this->info('Migration created successfully!');
 		
-		$this->call('dump-autoload');
+		shell_exec('composer dump-autoload');
 	}
 	
 	/**
