@@ -377,7 +377,7 @@ $website->subscription()->increment();
 // Add five to the subscription's current quantity...
 $website->subscription()->increment(5);
 
-$website->subscription->decrement();
+$website->subscription()->decrement();
 
 // Subtract five from the subscription's current quantity...
 $website->subscription()->decrement(5);
@@ -388,7 +388,7 @@ $website->subscription()->decrement(5);
 To cancel a subscription, use the `cancel` method:
 
 ```php
-$website->subscription->cancel();
+$website->subscription()->cancel();
 ```
 
 When a subscription is canceled, this package will automatically set the `billing_subscription_ends_at` column on your database. This column is used to know when the `subscribed` method should begin returning false. For example, if a customer cancels a subscription on March 1st, but the subscription was not scheduled to end until March 5th, the `subscribed` method will continue to return `true` until March 5th.
