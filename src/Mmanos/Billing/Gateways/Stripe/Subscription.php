@@ -138,8 +138,13 @@ class Subscription implements SubscriptionInterface
 		// This feature is coming in a future relase, however.
 		// Currently you can only specify a card token and the same card is used for all
 		// customer subscriptions.
-		
-		$stripe_subscription = $this->stripe_customer->subscriptions->create(array(
+		$stripe_subscriptions = $this->stripe_customer->subscriptions;
+
+		if ( ! $stripe_subscriptions) {
+			throw new \Exception("Stripe Customer does not exist.");
+		}
+
+		$stripe_subscription = $stripe_subscriptions->create(array(
 			'plan'      => $plan,
 			'quantity'  => Arr::get($properties, 'quantity') ? Arr::get($properties, 'quantity') : null,
 			'trial_end' => $trial_end,
