@@ -153,7 +153,9 @@ class Customer implements CustomerInterface
 			$this->local_customer->email = $properties['email'];
 		}
 		if (!empty($properties['coupon'])) {
-			$this->local_customer->coupon = Models\Coupon::where('code', $properties['coupon'])->first();
+			if ($coupon_model = Models\Coupon::where('code', $properties['coupon'])->first()) {
+				$this->local_customer->coupon_id = $coupon_model->id;
+			}
 		}
 		
 		$this->local_customer->save();
