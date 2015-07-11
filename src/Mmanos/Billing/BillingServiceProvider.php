@@ -19,7 +19,9 @@ class BillingServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
-		$this->package('mmanos/laravel-billing');
+		$this->publishes([
+			dirname(dirname(dirname(__FILE__))) . '/config/config.php' => config_path('billing.php'),
+		]);
 	}
 	
 	/**
