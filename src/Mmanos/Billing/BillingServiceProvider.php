@@ -19,7 +19,10 @@ class BillingServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
-		$this->package('mmanos/laravel-billing');
+		$this->loadViewsFrom(__DIR__.'/../../views', 'laravel-billing');
+        $this->publishes([
+            dirname(dirname(dirname(__FILE__))) . '/config/config.php' => config_path('billing.php')
+        ]);
 	}
 	
 	/**
@@ -30,7 +33,7 @@ class BillingServiceProvider extends ServiceProvider
 	public function register()
 	{
 		$this->app->bindShared('billing.gateway', function ($app) {
-			switch (Config::get('laravel-billing::default')) {
+			switch (config('billing.default')) {
 				case 'stripe':
 					return new \Mmanos\Billing\Gateways\Stripe\Gateway;
 				case 'braintree':

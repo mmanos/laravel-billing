@@ -34,7 +34,7 @@ class CustomerTableCommand extends Command
 		
 		$this->info('Migration created successfully!');
 		
-		$this->call('dump-autoload');
+		shell_exec('composer dump-autoload');
 	}
 	
 	/**
@@ -46,7 +46,7 @@ class CustomerTableCommand extends Command
 	{
 		$name = 'add_customer_billing_columns_to_' . $this->argument('table');
 		
-		$path = $this->laravel['path'].'/database/migrations';
+		$path = $this->laravel['path'].'/../database/migrations';
 		
 		return $this->laravel['migration.creator']->create($name, $path);
 	}

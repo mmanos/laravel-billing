@@ -10,11 +10,11 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "illuminate/support": "~4.1",
+        "illuminate/support": "~5.1",
         "nesbot/carbon": "~1.0"
     },
     "require-dev": {
-        "stripe/stripe-php": "~1.9",
+        "stripe/stripe-php": "2.*",
         "braintree/braintree_php" : "2.33.0"
     },
     "suggest": {

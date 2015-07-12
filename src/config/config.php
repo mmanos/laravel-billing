@@ -26,7 +26,7 @@ return array(
 	|
 	*/
 
-	'customer_models' => array('User'),
+	'customer_models' => ['User'],
 
 	/*
 	|--------------------------------------------------------------------------
@@ -37,7 +37,7 @@ return array(
 	|
 	*/
 
-	'subscription_models' => array('User'),
+	'subscription_models' => ['User'],
 
 	/*
 	|--------------------------------------------------------------------------
