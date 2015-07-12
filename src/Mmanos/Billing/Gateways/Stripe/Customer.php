@@ -199,11 +199,13 @@ class Customer implements CustomerInterface
 			return array();
 		}
 		
-		$cards = $this->stripe_customer->cards->all();
+		$cards = $this->stripe_customer->sources->data;
 		
 		$cards_array = array();
-		foreach ($cards->data as $card) {
-			$cards_array[] = $this->card($card);
+		foreach ($cards as $card) {
+			if($card->object == 'card') {
+				$cards_array[] = $this->card($card);
+			}
 		}
 		
 		return $cards_array;
