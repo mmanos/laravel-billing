@@ -14,7 +14,7 @@
         "nesbot/carbon": "~1.0"
     },
     "require-dev": {
-        "stripe/stripe-php": "~2.*",
+        "stripe/stripe-php": "2.*",
         "braintree/braintree_php" : "2.33.0"
     },
     "suggest": {
