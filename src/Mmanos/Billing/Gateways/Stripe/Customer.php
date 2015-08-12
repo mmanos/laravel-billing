@@ -75,7 +75,7 @@ class Customer implements CustomerInterface
 			$this->stripe_customer = Stripe_Customer::retrieve($this->id);
 		}
 		
-		if (!$this->stripe_customer || $this->stripe_customer->deleted) {
+		if (!$this->stripe_customer || property_exists($this->stripe_customer, 'deleted')) {
 			return null;
 		}
 		
