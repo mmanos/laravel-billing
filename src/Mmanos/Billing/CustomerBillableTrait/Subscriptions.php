@@ -1,6 +1,5 @@
 <?php namespace Mmanos\Billing\CustomerBillableTrait;
 
-use Mmanos\Billing\Facades\Billing;
 use Illuminate\Support\Arr;
 
 class Subscriptions
