@@ -38,7 +38,7 @@ class Invoices
 	}
 	
 	/**
-	 * Fetch the credit invoice.
+	 * Fetch the invoices.
 	 *
 	 * @return array
 	 */
@@ -54,7 +54,7 @@ class Invoices
 	}
 	
 	/**
-	 * Find and return the first credit card.
+	 * Find and return the first invoice.
 	 *
 	 * @return Invoice
 	 */
