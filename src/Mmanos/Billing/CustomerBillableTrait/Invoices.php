@@ -42,11 +42,11 @@ class Invoices
 	 *
 	 * @return array
 	 */
-	public function get()
+	public function get(array $parameters = array())
 	{
 		$invoices = array();
 		
-		foreach ($this->model->gatewayCustomer()->invoices() as $invoice) {
+		foreach ($this->model->gatewayCustomer()->invoices($parameters) as $invoice) {
 			$invoices[] = new Invoice($this->model, $invoice);
 		}
 		

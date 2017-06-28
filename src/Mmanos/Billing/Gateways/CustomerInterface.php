@@ -69,7 +69,7 @@ interface CustomerInterface
 	 *
 	 * @return array
 	 */
-	public function invoices();
+	public function invoices(array $parameters = array());
 	
 	/**
 	 * Fetch an invoice instance.

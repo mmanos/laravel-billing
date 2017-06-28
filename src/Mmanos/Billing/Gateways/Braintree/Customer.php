@@ -201,7 +201,7 @@ class Customer implements CustomerInterface
 	 *
 	 * @return array
 	 */
-	public function invoices()
+	public function invoices(array $parameters = array())
 	{
 		if (!$this->id) {
 			return array();

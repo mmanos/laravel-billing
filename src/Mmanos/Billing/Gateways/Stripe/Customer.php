@@ -226,7 +226,7 @@ class Customer implements CustomerInterface
 	 *
 	 * @return array
 	 */
-	public function invoices()
+	public function invoices(array $parameters = array())
 	{
 		$this->info();
 		
@@ -234,10 +234,13 @@ class Customer implements CustomerInterface
 			return array();
 		}
 		
-		$invoices = Stripe_Invoice::all(array(
-			'customer' => $this->id,
-			'limit'    => 100,
-		));
+		$parameters = array_merge(array(
+			'limit' => 100,
+		), $parameters);
+		
+		$parameters['customer'] = $this->id;
+		
+		$invoices = Stripe_Invoice::all($parameters);
 		
 		$invoices_array = array();
 		foreach ($invoices->data as $invoice) {
