@@ -152,7 +152,9 @@ class Billing
 			return $this;
 		}
 		
-		$this->customer->delete();
+		try {
+			$this->customer->delete();
+		} catch (Exception $e) {}
 		
 		$this->refresh();
 		
