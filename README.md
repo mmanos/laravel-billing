@@ -46,7 +46,7 @@ The following composer dependencies are needed for the listed billing gateways:
 Publish the default config file to your application so you can make modifications.
 
 ```console
-$ php artisan config:publish mmanos/laravel-billing
+$ php artisan vendor:publish
 ```
 
 #### Customer Migration

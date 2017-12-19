@@ -33,8 +33,8 @@ class SubscriptionTableCommand extends Command
 		file_put_contents($full_path, $this->getMigrationStub());
 		
 		$this->info('Migration created successfully!');
-		
-		$this->call('dump-autoload');
+
+        shell_exec('composer dump-autoload');
 	}
 	
 	/**
@@ -46,7 +46,7 @@ class SubscriptionTableCommand extends Command
 	{
 		$name = 'add_subscription_billing_columns_to_' . $this->argument('table');
 		
-		$path = $this->laravel['path'].'/database/migrations';
+		$path = $this->laravel['path'].'/../database/migrations';
 		
 		return $this->laravel['migration.creator']->create($name, $path);
 	}
