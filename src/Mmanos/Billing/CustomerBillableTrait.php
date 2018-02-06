@@ -104,14 +104,18 @@ trait CustomerBillableTrait
 		
 		if (method_exists($this, 'subscriptionmodels')) {
 			$subscriptions = array();
-			
-			foreach ($this->subscriptionmodels() as $value) {
-				if ($value instanceof \Illuminate\Support\Collection) {
-					$subscriptions = array_merge($subscriptions, $value->all());
+			$subscr_models = $this->subscriptionmodels();
+			if($subscr_models) {
+				foreach ($subscr_models as $value) {
+					if ($value instanceof \Illuminate\Support\Collection) {
+						$subscriptions = array_merge($subscriptions, $value->all());
+					}
+					else if ($value instanceof \Illuminate\Database\Eloquent\Model) {
+						$subscriptions[] = $value;
+					}
 				}
-				else if ($value instanceof \Illuminate\Database\Eloquent\Model) {
-					$subscriptions[] = $value;
-				}
+			}else{
+				return array();
 			}
 			
 			return $subscriptions;
@@ -121,7 +125,7 @@ trait CustomerBillableTrait
 		if (method_exists($this, 'gatewaySubscription')) {
 			return array($this);
 		}
-		
+
 		return null;
 	}
 	

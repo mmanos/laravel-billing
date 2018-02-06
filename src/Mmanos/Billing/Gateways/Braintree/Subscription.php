@@ -161,6 +161,10 @@ class Subscription implements SubscriptionInterface
 	public function create($plan, array $properties = array())
 	{
 		if (!$token = Arr::get($properties, 'card')) {
+            if(empty($this->braintree_customer)){
+                throw new \Exception('Customer not existed in Braintree');
+            }
+
 			$cards = $this->braintree_customer->creditCards;
 			$token = $cards[0]->token;
 		}
