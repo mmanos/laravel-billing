@@ -26,7 +26,7 @@ return array(
 	|
 	*/
 
-	'customer_models' => array('User'),
+	'customer_models' => ['User'],
 
 	/*
 	|--------------------------------------------------------------------------
@@ -37,7 +37,7 @@ return array(
 	|
 	*/
 
-	'subscription_models' => array('User'),
+	'subscription_models' => ['User'],
 
 	/*
 	|--------------------------------------------------------------------------
@@ -69,6 +69,7 @@ return array(
 				'database' => storage_path().'/meta/billing-local.sqlite',
 				'prefix'   => '',
 			),
+			
 			'api_delay_ms' => 200,
 		),
 
